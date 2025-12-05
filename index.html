@@ -1,1 +1,543 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprende Python Interactivo - Tutor para Principiantes</title>
+    <!-- Carga de Tailwind CSS para el estilizado -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Carga de Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Configuración global de fuentes y colores de acento */
+        :root {
+            --primary-color: #14b8a6; /* Teal 500 */
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Fondo muy claro */
+        }
+        /* Estilos personalizados para el editor de código */
+        #code-editor {
+            min-height: 200px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            white-space: pre;
+            padding: 1rem;
+            line-height: 1.5;
+        }
+        /* Resaltar sintaxis simple (simulación) */
+        .keyword { color: #059669; font-weight: bold; } /* print, if, else */
+        .string { color: #dc2626; } /* Cadenas */
+        .number { color: #4f46e5; } /* Números */
+        .comment { color: #9ca3af; } /* Comentarios */
+        .variable { color: #0369a1; } /* Variables */
+        /* Estilo para los elementos del menú (sidebar) */
+        .sidebar-item:hover {
+            background-color: #ecfdf5; /* Teal 50 */
+        }
+        .sidebar-item.active {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
 
+    <!-- Encabezado (Header) -->
+    <header class="bg-white shadow-md p-4 sticky top-0 z-10">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-terminal text-teal-500 mr-3"></i>
+                Aprende Python Interactivo
+            </h1>
+            <button id="mobile-menu-button" class="md:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-100">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="flex-grow container mx-auto p-4 md:p-8 flex flex-col md:flex-row gap-8">
+
+        <!-- Navegación Lateral (Sidebar) -->
+        <nav id="sidebar" class="w-full md:w-64 bg-white rounded-xl shadow-lg p-4 md:sticky md:top-20 h-fit transition-transform transform -translate-x-full md:translate-x-0 absolute md:relative z-20">
+            <h2 class="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">Temas</h2>
+            <ul id="lesson-list">
+                <!-- Los ítems de las lecciones se insertarán aquí por JS -->
+            </ul>
+        </nav>
+
+        <!-- Área de Contenido Principal -->
+        <section class="flex-grow w-full md:w-auto">
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8 transition-all duration-300">
+                <h2 id="lesson-title" class="text-3xl font-extrabold text-teal-600 mb-4"></h2>
+                
+                <!-- Explicación Teórica -->
+                <div class="mb-6 border-b pb-4">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-2 flex items-center">
+                        <i class="fas fa-book-open mr-2 text-teal-500"></i>
+                        Explicación Teórica
+                    </h3>
+                    <p id="theory-content" class="text-gray-600 leading-relaxed"></p>
+                </div>
+
+                <!-- Escenario Dinámico (Problema) -->
+                <div class="p-4 bg-gray-50 rounded-lg border-l-4 border-yellow-500 mb-6">
+                    <h3 class="text-xl font-semibold text-yellow-700 mb-2 flex items-center">
+                        <i class="fas fa-lightbulb mr-2"></i>
+                        Escenario de Práctica
+                    </h3>
+                    <p id="problem-statement" class="text-gray-800 font-medium"></p>
+                </div>
+
+                <!-- Editor de Código (Textarea) -->
+                <div class="bg-gray-800 text-white rounded-lg shadow-inner mb-4 overflow-hidden">
+                    <div class="bg-gray-700 text-sm p-2 flex justify-between items-center">
+                        <span><i class="fas fa-code mr-1"></i> Editor de Código Python</span>
+                        <span class="text-gray-400"># Escribe tu código aquí</span>
+                    </div>
+                    <!-- El textarea para el código del usuario -->
+                    <textarea id="code-editor" class="w-full bg-gray-900 text-gray-200 outline-none resize-none p-3" spellcheck="false" placeholder="Escribe tu código Python aquí..."></textarea>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button id="run-button" class="flex-grow bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 transform hover:scale-[1.01]">
+                        <i class="fas fa-play mr-2"></i> Ejecutar y Verificar
+                    </button>
+                    <button id="next-button" class="flex-grow bg-gray-400 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 transform hover:scale-[1.01] opacity-50 cursor-not-allowed" disabled>
+                        <i class="fas fa-arrow-right mr-2"></i> Siguiente Lección
+                    </button>
+                </div>
+            </div>
+
+            <!-- Área de Resultados y Retroalimentación -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-semibold text-gray-700 mb-3 flex items-center">
+                    <i class="fas fa-scroll mr-2 text-indigo-500"></i>
+                    Resultados de la Ejecución
+                </h3>
+                <div id="output-area" class="min-h-[50px] bg-gray-100 p-4 rounded-lg text-gray-800 whitespace-pre-wrap overflow-x-auto text-sm">
+                    <!-- Los mensajes de output irán aquí -->
+                    <p class="text-gray-500">Presiona "Ejecutar y Verificar" para ver el resultado.</p>
+                </div>
+                
+                <!-- Feedback Específico (Opcional, para pistas) -->
+                <div id="feedback-area" class="mt-4 p-3 rounded-lg hidden">
+                    <p id="feedback-text" class="font-medium"></p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Pie de Página (Footer) -->
+    <footer class="bg-gray-800 text-white p-4 mt-8">
+        <div class="container mx-auto text-center text-sm">
+            &copy; 2024 Aprende Python Interactivo. Proyecto educativo simulado.
+        </div>
+    </footer>
+
+    <script>
+        // --- 1. Definición de Contenido y Escenarios ---
+        const scenarios = [
+            {
+                title: "Introducción a Python y ¡Hola Mundo!",
+                theory: "Python es un lenguaje de programación de alto nivel, fácil de leer y escribir. Para mostrar mensajes en la consola, utilizamos la función nativa `print()`. Recuerda incluir el mensaje entre comillas (simples o dobles) para indicar que es una cadena de texto (String).",
+                problem: "Usa la función `print()` para mostrar el mensaje exacto: ¡Mi primer código Python!",
+                type: "output", // Tipo de validación: Comprobar el output
+                expected_output: "¡Mi primer código Python!",
+                hint: "Asegúrate de que el texto esté entre comillas dobles o simples y usa la función `print()`. Verifica la puntuación.",
+                code_template: 'print("¡Mi primer código Python!")' // Solución para el editor
+            },
+            {
+                title: "Variables y Asignación",
+                theory: "Las variables son contenedores con nombre que utilizamos para almacenar datos. En Python, declaras una variable simplemente asignándole un valor con el operador `=`. Por ejemplo: `x = 10`.",
+                problem: "Declara una variable llamada `edad` y asígnale el valor entero `25`. Luego, imprime el valor de `edad` para verificarlo.",
+                type: "variables", // Tipo de validación: Comprobar el estado final de las variables
+                expected_variables: {
+                    edad: 25,
+                },
+                expected_output: "25",
+                hint: "El nombre de la variable debe ser exactamente 'edad' y su valor debe ser el número 25, sin comillas.",
+                code_template: 'edad = 25\nprint(edad)'
+            },
+            {
+                title: "Tipos de Datos: Cadenas (Strings)",
+                theory: "Una cadena (String) es una secuencia de caracteres utilizada para representar texto. Se definen entre comillas. El operador `+` se utiliza para *concatenar* (unir) dos o más cadenas.",
+                problem: "Declara una variable llamada `saludo` con el valor 'Hola ' y una variable llamada `nombre` con el valor 'mundo'. Luego, imprime la concatenación de ambas variables para obtener el resultado: Hola mundo.",
+                type: "output",
+                expected_output: "Hola mundo",
+                expected_variables: {
+                     saludo: "Hola ", // Se verificará que estas variables se hayan declarado
+                     nombre: "mundo",
+                },
+                hint: "Recuerda incluir un espacio en una de las cadenas para que el resultado final tenga espacio. La concatenación se hace con `saludo + nombre` dentro de `print()`.",
+                code_template: 'saludo = "Hola "\nnombre = "mundo"\nprint(saludo + nombre)'
+            },
+            {
+                title: "Condicionales: If y Else",
+                theory: "Las estructuras condicionales nos permiten tomar decisiones en nuestro código. La palabra clave `if` evalúa una condición, y si es verdadera, ejecuta el bloque de código indentado debajo. `else` (opcional) ejecuta un bloque diferente si la condición es falsa.",
+                problem: "Declara una variable `puntuacion` con el valor `12`. Escribe un condicional que imprima 'Aprobado' si `puntuacion` es mayor o igual a 10, y 'Reprobado' en caso contrario.",
+                type: "output",
+                expected_variables: {
+                    puntuacion: 12
+                },
+                expected_output: "Aprobado",
+                hint: "La sintaxis es `if condicion:` seguida de un bloque indentado. Recuerda usar el operador `>=` para 'mayor o igual'.",
+                code_template: 'puntuacion = 12\n\n# Escribe tu condicional aquí\nif puntuacion >= 10:\n    print("Aprobado")\nelse:\n    print("Reprobado")'
+            }
+        ];
+
+        // Estado de la aplicación
+        let currentStep = 0;
+        let isCodeCorrect = false;
+
+        // --- 2. Referencias a Elementos del DOM ---
+        const lessonList = document.getElementById('lesson-list');
+        const lessonTitle = document.getElementById('lesson-title');
+        const theoryContent = document.getElementById('theory-content');
+        const problemStatement = document.getElementById('problem-statement');
+        const codeEditor = document.getElementById('code-editor');
+        const runButton = document.getElementById('run-button');
+        const nextButton = document.getElementById('next-button');
+        const outputArea = document.getElementById('output-area');
+        const feedbackArea = document.getElementById('feedback-area');
+        const feedbackText = document.getElementById('feedback-text');
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const sidebar = document.getElementById('sidebar');
+
+        // --- 3. Funciones de Carga de UI ---
+
+        /**
+         * Inicializa la lista de lecciones en la barra lateral.
+         */
+        function initializeLessonList() {
+            lessonList.innerHTML = '';
+            scenarios.forEach((scenario, index) => {
+                const li = document.createElement('li');
+                li.classList.add('p-3', 'rounded-lg', 'cursor-pointer', 'text-gray-700', 'sidebar-item');
+                li.textContent = `${index + 1}. ${scenario.title}`;
+                li.setAttribute('data-index', index);
+                li.addEventListener('click', () => {
+                    currentStep = index;
+                    loadScenario(currentStep);
+                    // Ocultar sidebar en móvil después de la selección
+                    if (window.innerWidth < 768) {
+                        sidebar.classList.add('-translate-x-full');
+                    }
+                });
+                lessonList.appendChild(li);
+            });
+        }
+
+        /**
+         * Carga el contenido del escenario actual en la interfaz.
+         * @param {number} index - El índice del escenario a cargar.
+         */
+        function loadScenario(index) {
+            const scenario = scenarios[index];
+            if (!scenario) return;
+
+            // 1. Actualizar Contenido Principal
+            lessonTitle.textContent = scenario.title;
+            theoryContent.innerHTML = scenario.theory.replace(/`([^`]+)`/g, '<code class="bg-gray-200 text-red-600 px-1 py-0.5 rounded text-sm">$1</code>');
+            problemStatement.textContent = scenario.problem;
+            codeEditor.value = scenario.code_template || '';
+
+            // 2. Resetear Resultados y Botones
+            outputArea.innerHTML = '<p class="text-gray-500">Presiona "Ejecutar y Verificar" para ver el resultado.</p>';
+            feedbackArea.classList.add('hidden');
+            nextButton.disabled = true;
+            nextButton.classList.replace('bg-teal-500', 'bg-gray-400');
+            nextButton.classList.add('opacity-50', 'cursor-not-allowed');
+            nextButton.classList.remove('hover:bg-teal-600');
+            
+            isCodeCorrect = false;
+
+            // 3. Resaltar la lección actual en la sidebar
+            document.querySelectorAll('.sidebar-item').forEach((item, i) => {
+                item.classList.remove('active');
+                if (i === index) {
+                    item.classList.add('active');
+                }
+            });
+        }
+
+
+        // --- 4. Lógica de Simulación y Validación (Núcleo de la App) ---
+
+        /**
+         * Simula la ejecución de código Python (asignaciones y prints).
+         * Este es un simulador muy básico para fines educativos.
+         * @param {string} code - El código Python escrito por el usuario.
+         * @returns {{output: string, variables: Object}} - El resultado simulado.
+         */
+        function simulatePython(code) {
+            // Eliminar comentarios para simplificar el parsing
+            const cleanCode = code.split('\n')
+                .filter(line => !line.trim().startsWith('#'))
+                .join('\n');
+
+            const lines = cleanCode.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+            const environment = {}; // Almacena el estado de las variables (simulación)
+            let output = '';
+            
+            // Expresiones regulares para parsing
+            const assignmentRegex = /^([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(.*)$/;
+            const printRegex = /^print\s*\(([^)]*)\)$/;
+            const ifRegex = /^if\s+(.*):$/;
+            const elseRegex = /^else:$/;
+
+            // Estado para manejar el flujo condicional
+            let inConditionalBlock = false;
+            let conditionMet = false;
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+
+                // 1. Manejar Asignaciones (Variables)
+                let match = line.match(assignmentRegex);
+                if (match) {
+                    const varName = match[1];
+                    const expression = match[2].trim();
+                    let value;
+
+                    // Intentar inferir el tipo de valor: String, Number, o Expresión
+                    if (expression.startsWith('"') && expression.endsWith('"') || expression.startsWith("'") && expression.endsWith("'")) {
+                        // String (eliminar comillas)
+                        value = expression.substring(1, expression.length - 1);
+                    } else if (!isNaN(Number(expression))) {
+                        // Número
+                        value = Number(expression);
+                    } else {
+                        // Podría ser otra variable o expresión simple
+                        if (environment.hasOwnProperty(expression)) {
+                            value = environment[expression]; // Asignación de variable a variable
+                        } else {
+                            // Simulación simple de expresión matemática/concatenación
+                            try {
+                                // Evalúa la expresión en el contexto de las variables existentes
+                                const func = new Function(...Object.keys(environment), `return ${expression};`);
+                                value = func(...Object.values(environment));
+                            } catch (e) {
+                                // Si falla, lo tomamos como un string literal si no hay error específico
+                                value = expression; 
+                            }
+                        }
+                    }
+                    environment[varName] = value;
+                    inConditionalBlock = false; // Resetear el estado del bloque
+                    continue;
+                }
+
+                // 2. Manejar la función print()
+                match = line.match(printRegex);
+                if (match) {
+                    const content = match[1].trim();
+                    let printValue;
+
+                    // Si estamos en un bloque condicional, solo ejecutar si la condición se cumplió
+                    const isIndented = lines[i-1] && lines[i-1].endsWith(':') && line.startsWith('    ');
+
+                    if (inConditionalBlock && isIndented && !conditionMet) {
+                        continue; // Saltar si estamos en un bloque que no se ejecuta
+                    }
+                    
+                    try {
+                        // Evaluar contenido de print: puede ser una variable o una expresión (ej. a + b)
+                        const func = new Function(...Object.keys(environment), `return ${content};`);
+                        printValue = func(...Object.values(environment));
+                    } catch (e) {
+                        // Si falla (ej. variable no definida), lo tomamos como el string literal
+                        printValue = content.replace(/^['"]|['"]$/g, '');
+                    }
+
+                    output += (printValue !== undefined ? printValue.toString() : '') + '\n';
+                    inConditionalBlock = false; // Un print simple no continúa el bloque condicional
+                    continue;
+                }
+
+                // 3. Manejar Condicionales (if/else)
+                match = line.match(ifRegex);
+                if (match) {
+                    const condition = match[1];
+                    try {
+                        // Simulación: Evaluar la condición en el contexto de las variables
+                        const func = new Function(...Object.keys(environment), `return (${condition});`);
+                        conditionMet = func(...Object.values(environment));
+                    } catch (e) {
+                        conditionMet = false; // Si la condición es inválida, se asume falsa
+                    }
+                    inConditionalBlock = true;
+                    continue;
+                }
+
+                match = line.match(elseRegex);
+                if (match) {
+                    // En un else, la condición se cumple si el IF anterior NO se cumplió
+                    conditionMet = !conditionMet;
+                    inConditionalBlock = true;
+                    continue;
+                }
+
+                // 4. Manejar líneas dentro de bloques condicionales
+                const isBlockLine = line.startsWith('    '); // Heurística simple de indentación
+                if (isBlockLine) {
+                    if (inConditionalBlock && !conditionMet) {
+                        // Si estamos en un bloque y la condición NO se cumplió, saltar esta línea
+                        continue;
+                    }
+                    // Si la condición se cumple o no estamos en un bloque, procesar la línea (como si fuera un print o asignación)
+                    // (Esta parte es simplificada, ya que arriba solo manejamos print/asignación)
+                }
+
+                // Si no se reconoció, ignorar la línea
+            }
+
+            // Limpiar saltos de línea extra al final
+            output = output.trim();
+            
+            return { output, variables: environment };
+        }
+
+        /**
+         * Verifica el código del usuario contra las expectativas del escenario.
+         */
+        function checkCode() {
+            const code = codeEditor.value;
+            const scenario = scenarios[currentStep];
+
+            // 1. Simular la ejecución
+            const result = simulatePython(code);
+            
+            // 2. Mostrar el resultado (output)
+            outputArea.classList.remove('bg-gray-100', 'bg-red-100', 'bg-green-100');
+            outputArea.classList.add('bg-gray-100');
+            outputArea.innerHTML = result.output.length > 0 ? result.output : '<p class="text-gray-500">El código se ejecutó, pero no produjo ninguna salida (output).</p>';
+
+            let success = true;
+            let message = '';
+            
+            // 3. Validar contra el tipo de escenario
+            if (scenario.type === 'output') {
+                // Validación por output exacto
+                if (result.output === scenario.expected_output) {
+                    message = '¡Excelente! El output es correcto.';
+                } else {
+                    success = false;
+                    message = `Error: El output esperado era "${scenario.expected_output}", pero se obtuvo "${result.output}".`;
+                }
+            } else if (scenario.type === 'variables') {
+                // Validación por estado de variables
+                const expectedVars = scenario.expected_variables;
+                let varErrors = [];
+
+                for (const key in expectedVars) {
+                    if (!result.variables.hasOwnProperty(key)) {
+                        varErrors.push(`La variable \`${key}\` no fue declarada.`);
+                    } else if (result.variables[key] !== expectedVars[key]) {
+                        varErrors.push(`El valor de \`${key}\` es incorrecto. Esperado: ${expectedVars[key]}, Obtenido: ${result.variables[key]}.`);
+                    }
+                }
+
+                // También verificamos el output si se esperaba uno (como en el escenario de Variables)
+                if (result.output !== scenario.expected_output) {
+                    varErrors.push(`El output (resultado impreso) es incorrecto. Esperado: "${scenario.expected_output}", Obtenido: "${result.output}".`);
+                }
+
+                if (varErrors.length > 0) {
+                    success = false;
+                    message = 'Tu código tiene errores de asignación o impresión:\n- ' + varErrors.join('\n- ');
+                } else {
+                    message = '¡Felicidades! Declaraste correctamente las variables y el output es correcto.';
+                }
+            }
+
+            // 4. Mostrar Retroalimentación Final
+            if (success) {
+                isCodeCorrect = true;
+                showFeedback(true, '¡Excelente! Has completado el escenario. ¡Puedes avanzar!', message);
+                nextButton.disabled = false;
+                nextButton.classList.replace('bg-gray-400', 'bg-teal-500');
+                nextButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                nextButton.classList.add('hover:bg-teal-600');
+            } else {
+                isCodeCorrect = false;
+                showFeedback(false, 'Inténtalo de nuevo. Revisa la pista.', message + '\n\nPista: ' + scenario.hint);
+                nextButton.disabled = true;
+                nextButton.classList.replace('bg-teal-500', 'bg-gray-400');
+                nextButton.classList.add('opacity-50', 'cursor-not-allowed');
+                nextButton.classList.remove('hover:bg-teal-600');
+            }
+        }
+
+        /**
+         * Muestra un mensaje de retroalimentación de éxito o error.
+         * @param {boolean} success - Si fue un éxito o un error.
+         * @param {string} title - El título del mensaje.
+         * @param {string} detailedMessage - El mensaje detallado.
+         */
+        function showFeedback(success, title, detailedMessage) {
+            feedbackArea.classList.remove('hidden', 'bg-red-100', 'border-red-500', 'bg-green-100', 'border-green-500');
+            if (success) {
+                feedbackArea.classList.add('bg-green-100', 'border-green-500', 'border-l-4');
+                feedbackText.classList.add('text-green-800');
+                feedbackText.innerHTML = `<i class="fas fa-check-circle mr-2"></i> ${title} <br><span class="font-normal text-sm whitespace-pre-wrap">${detailedMessage}</span>`;
+            } else {
+                feedbackArea.classList.add('bg-red-100', 'border-red-500', 'border-l-4');
+                feedbackText.classList.add('text-red-800');
+                feedbackText.innerHTML = `<i class="fas fa-times-circle mr-2"></i> ${title} <br><span class="font-normal text-sm whitespace-pre-wrap">${detailedMessage}</span>`;
+            }
+        }
+
+        // --- 5. Manejo de Eventos y Inicialización ---
+
+        // Asignar el evento al botón Ejecutar/Verificar
+        runButton.addEventListener('click', checkCode);
+
+        // Asignar el evento al botón Siguiente Lección
+        nextButton.addEventListener('click', () => {
+            if (isCodeCorrect) {
+                currentStep++;
+                if (currentStep < scenarios.length) {
+                    loadScenario(currentStep);
+                    // Desplazar la vista hacia arriba para ver el nuevo contenido
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    // Fin del curso simple
+                    lessonTitle.textContent = "¡Curso Completo!";
+                    theoryContent.textContent = "¡Felicidades! Has completado todos los escenarios básicos de esta introducción a Python. ¡Estás listo para el siguiente nivel!";
+                    problemStatement.textContent = "Gracias por participar.";
+                    codeEditor.value = "print('Curso terminado con éxito!')";
+                    codeEditor.disabled = true;
+                    runButton.disabled = true;
+                    nextButton.disabled = true;
+                    outputArea.innerHTML = '<p class="text-green-600 font-bold">¡HAS TERMINADO!</p>';
+                }
+            }
+        });
+
+        // Toggle para el menú móvil
+        mobileMenuButton.addEventListener('click', () => {
+            sidebar.classList.toggle('-translate-x-full');
+            sidebar.classList.toggle('shadow-2xl');
+        });
+
+        // Inicializar la aplicación
+        window.onload = () => {
+            initializeLessonList();
+            loadScenario(currentStep);
+            
+            // Ocultar sidebar en móvil por defecto
+            if (window.innerWidth < 768) {
+                sidebar.classList.add('-translate-x-full');
+                sidebar.classList.remove('absolute', 'md:relative'); // Asegurar el comportamiento de superposición
+            }
+        };
+
+    </script>
+</body>
+</html>
