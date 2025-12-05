@@ -119,7 +119,7 @@
                     <i class="fas fa-scroll mr-2 text-indigo-500"></i>
                     Resultados de la Ejecución
                 </h3>
-                <div id="output-area" class="min-h-[50px] bg-gray-100 p-4 rounded-lg text-gray-800 whitespace-pre-wrap overflow-x-auto text-sm">
+                <div id="output-area" class="min-h-[50px] bg-gray-100 p-4 rounded-lg text-gray-800 whitespace-pre-wrap overflow-x-auto text-sm transition-colors duration-300">
                     <!-- Los mensajes de output irán aquí -->
                     <p class="text-gray-500">Presiona "Ejecutar y Verificar" para ver el resultado.</p>
                 </div>
@@ -150,7 +150,8 @@
                 type: "output", // Tipo de validación: Comprobar el output
                 expected_output: "¡Mi primer código Python!",
                 hint: "Asegúrate de que el texto esté entre comillas dobles o simples y usa la función `print()`. Verifica la puntuación.",
-                code_template: 'print("¡Mi primer código Python!")' // Solución para el editor
+                starter_code: '', // El editor empieza vacío
+                solution_code: 'print("¡Mi primer código Python!")' // Solución completa (solo para referencia interna)
             },
             {
                 title: "Variables y Asignación",
@@ -162,7 +163,8 @@
                 },
                 expected_output: "25",
                 hint: "El nombre de la variable debe ser exactamente 'edad' y su valor debe ser el número 25, sin comillas.",
-                code_template: 'edad = 25\nprint(edad)'
+                starter_code: '',
+                solution_code: 'edad = 25\nprint(edad)'
             },
             {
                 title: "Tipos de Datos: Cadenas (Strings)",
@@ -175,7 +177,8 @@
                      nombre: "mundo",
                 },
                 hint: "Recuerda incluir un espacio en una de las cadenas para que el resultado final tenga espacio. La concatenación se hace con `saludo + nombre` dentro de `print()`.",
-                code_template: 'saludo = "Hola "\nnombre = "mundo"\nprint(saludo + nombre)'
+                starter_code: '',
+                solution_code: 'saludo = "Hola "\nnombre = "mundo"\nprint(saludo + nombre)'
             },
             {
                 title: "Condicionales: If y Else",
@@ -187,7 +190,8 @@
                 },
                 expected_output: "Aprobado",
                 hint: "La sintaxis es `if condicion:` seguida de un bloque indentado. Recuerda usar el operador `>=` para 'mayor o igual'.",
-                code_template: 'puntuacion = 12\n\n# Escribe tu condicional aquí\nif puntuacion >= 10:\n    print("Aprobado")\nelse:\n    print("Reprobado")'
+                starter_code: 'puntuacion = 12\n\n# Escribe tu condicional aquí',
+                solution_code: 'puntuacion = 12\n\n# Escribe tu condicional aquí\nif puntuacion >= 10:\n    print("Aprobado")\nelse:\n    print("Reprobado")'
             }
         ];
 
@@ -245,10 +249,14 @@
             lessonTitle.textContent = scenario.title;
             theoryContent.innerHTML = scenario.theory.replace(/`([^`]+)`/g, '<code class="bg-gray-200 text-red-600 px-1 py-0.5 rounded text-sm">$1</code>');
             problemStatement.textContent = scenario.problem;
-            codeEditor.value = scenario.code_template || '';
+            
+            // *** CAMBIO CLAVE: Cargar código de inicio (starter_code), no la solución completa. ***
+            codeEditor.value = scenario.starter_code || '';
 
             // 2. Resetear Resultados y Botones
             outputArea.innerHTML = '<p class="text-gray-500">Presiona "Ejecutar y Verificar" para ver el resultado.</p>';
+            outputArea.classList.remove('bg-green-100', 'bg-red-100');
+            outputArea.classList.add('bg-gray-100'); // Volver al color base
             feedbackArea.classList.add('hidden');
             nextButton.disabled = true;
             nextButton.classList.replace('bg-teal-500', 'bg-gray-400');
@@ -413,11 +421,9 @@
             // 1. Simular la ejecución
             const result = simulatePython(code);
             
-            // 2. Mostrar el resultado (output)
+            // 2. Mostrar el resultado (output) y cambiar color de fondo
             outputArea.classList.remove('bg-gray-100', 'bg-red-100', 'bg-green-100');
-            outputArea.classList.add('bg-gray-100');
-            outputArea.innerHTML = result.output.length > 0 ? result.output : '<p class="text-gray-500">El código se ejecutó, pero no produjo ninguna salida (output).</p>';
-
+            
             let success = true;
             let message = '';
             
@@ -455,18 +461,27 @@
                     message = '¡Felicidades! Declaraste correctamente las variables y el output es correcto.';
                 }
             }
+            
+            // 4. Actualizar el output y el color de fondo del área de resultados
+            outputArea.innerHTML = result.output.length > 0 ? result.output : '<p class="text-gray-500">El código se ejecutó, pero no produjo ninguna salida (output).</p>';
 
-            // 4. Mostrar Retroalimentación Final
+            if (success) {
+                outputArea.classList.add('bg-green-100');
+            } else {
+                outputArea.classList.add('bg-red-100');
+            }
+
+            // 5. Mostrar Retroalimentación Final (en el feedback-area)
             if (success) {
                 isCodeCorrect = true;
-                showFeedback(true, '¡Excelente! Has completado el escenario. ¡Puedes avanzar!', message);
+                showFeedback(true, '¡Código Correcto!', message);
                 nextButton.disabled = false;
                 nextButton.classList.replace('bg-gray-400', 'bg-teal-500');
                 nextButton.classList.remove('opacity-50', 'cursor-not-allowed');
                 nextButton.classList.add('hover:bg-teal-600');
             } else {
                 isCodeCorrect = false;
-                showFeedback(false, 'Inténtalo de nuevo. Revisa la pista.', message + '\n\nPista: ' + scenario.hint);
+                showFeedback(false, 'Error de Verificación', message + '\n\nPista: ' + scenario.hint);
                 nextButton.disabled = true;
                 nextButton.classList.replace('bg-teal-500', 'bg-gray-400');
                 nextButton.classList.add('opacity-50', 'cursor-not-allowed');
@@ -484,12 +499,14 @@
             feedbackArea.classList.remove('hidden', 'bg-red-100', 'border-red-500', 'bg-green-100', 'border-green-500');
             if (success) {
                 feedbackArea.classList.add('bg-green-100', 'border-green-500', 'border-l-4');
+                feedbackText.classList.remove('text-red-800');
                 feedbackText.classList.add('text-green-800');
-                feedbackText.innerHTML = `<i class="fas fa-check-circle mr-2"></i> ${title} <br><span class="font-normal text-sm whitespace-pre-wrap">${detailedMessage}</span>`;
+                feedbackText.innerHTML = `<i class="fas fa-check-circle mr-2"></i> <strong>${title}</strong> <br><span class="font-normal text-sm whitespace-pre-wrap">${detailedMessage}</span>`;
             } else {
                 feedbackArea.classList.add('bg-red-100', 'border-red-500', 'border-l-4');
+                feedbackText.classList.remove('text-green-800');
                 feedbackText.classList.add('text-red-800');
-                feedbackText.innerHTML = `<i class="fas fa-times-circle mr-2"></i> ${title} <br><span class="font-normal text-sm whitespace-pre-wrap">${detailedMessage}</span>`;
+                feedbackText.innerHTML = `<i class="fas fa-times-circle mr-2"></i> <strong>${title}</strong> <br><span class="font-normal text-sm whitespace-pre-wrap">${detailedMessage}</span>`;
             }
         }
 
